@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  ia:
+    container_name: "ia-authenticator"
+    build: ia
+    working_dir: /app
+    volumes:
+      - "./ia/v3:/app/"
+    entrypoint: ["gunicorn", "--bind", "0.0.0.0:5000", "app"]
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+  keycloak:
+    container_name: "keycloak"
+    build: sso
+    entrypoint: ["mvn","clean", "spring-boot:run"]
+    volumes:
+      - "./sso:/sso"
+    ports:
+      - "8083:8083"
+
+  frontend:
+    image: node:14-alpine
+    volumes:
+      - "./frontend:/frontend"
+    working_dir: /frontend
+    ports:
+      - "3000:3000"
+    entrypoint: "yarn"
+    command:
+      - "start"
